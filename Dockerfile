@@ -26,6 +26,7 @@ RUN apt-get update -y && \
     # pip3 install modelscope[multi-modal] && \
     pip3 install  --no-cache-dir -r requirements.txt
 
+COPY . /app/
 
 # 将构建产物/app/main拷贝到运行时的工作目录中
 # COPY --from=builder /app/main /app/index.html /app/
