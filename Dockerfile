@@ -22,11 +22,13 @@ WORKDIR /app
 RUN apt-get update -y && \
     apt-get install --no-install-recommends -y python3-pip && rm -rf /var/lib/apt/lists/* && \
     pip3 install --no-cache-dir pip --upgrade && \
-    pip3 install -q git+https://github.com/huggingface/transformers.git accelerate bitsandbytes && \
+    pip3 install -q git+https://github.com/huggingface/transformers.git accelerate bitsandbytes
     # pip3 install modelscope[multi-modal] && \
-    pip3 install  --no-cache-dir -r requirements.txt
 
 COPY . /app/
+
+RUN pip3 install  --no-cache-dir -r requirements.txt
+
 
 # 将构建产物/app/main拷贝到运行时的工作目录中
 # COPY --from=builder /app/main /app/index.html /app/
