@@ -18,7 +18,7 @@ env:
   QUAY_REGISTRY: ${{ vars.QUAY_REGISTRY  || 'quay.io' }}
   
   BLOCKAI_IMAGE_NAME: ${{ vars.BLOCKAI_IMAGE_NAME || 'luweb/kosmos2' }}
-  QUAY_USER: ${{ vars.QUAY_USERNAME || 'luweb'}} # 
+  QUAY_USER: ${{ vars.QUAY_USER || 'luweb'}} # 
   QUAY_TOKEN: ${{ secrets.QUAY_TOKEN }} # 
   BUILD_TAG: 20240908
   TZ: Asia/Shanghai

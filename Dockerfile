@@ -24,7 +24,7 @@ RUN apt-get update -y && \
     pip3 install --no-cache-dir pip --upgrade && \
     pip3 install -q git+https://github.com/huggingface/transformers.git accelerate bitsandbytes && \
     # pip3 install modelscope[multi-modal] && \
-    pip3 -r requirements.txt
+    pip3 install -r requirements.txt
 
 
 # 将构建产物/app/main拷贝到运行时的工作目录中
