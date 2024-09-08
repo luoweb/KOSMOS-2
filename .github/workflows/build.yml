@@ -1,0 +1,96 @@
+name: Build Images
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+on:
+  # schedule:
+  #   - cron: '0 3 * * *'
+  push:
+    branches: [ "main", "master" ]
+
+env:
+  # Use docker.io for Docker Hub if empty
+  # REGISTRY: registry.us-west-1.aliyuncs.com
+  # REGISTRY: registry.cn-hangzhou.aliyuncs.com
+  QUAY_REGISTRY: ${{ vars.QUAY_REGISTRY  || 'quay.io' }}
+  
+  BLOCKAI_IMAGE_NAME: ${{ vars.BLOCKAI_IMAGE_NAME || 'luweb/kosmos2' }}
+  QUAY_USER: ${{ vars.QUAY_USERNAME || 'luweb'}} # 
+  QUAY_TOKEN: ${{ secrets.QUAY_TOKEN }} # 
+  BUILD_TAG: 20240908
+  TZ: Asia/Shanghai
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      PLATFORMS: linux/amd64,linux/arm64
+    permissions:
+      contents: read
+      packages: write
+      # This is used to complete the identity challenge
+      # with sigstore/fulcio when running outside of PRs.
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Get the version 
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@master
+        with:
+          platforms: all
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log into registry ${{ env.QUAY_REGISTRY }}
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
+        with:
+          registry: ${{ env.QUAY_REGISTRY }}
+          username: ${{ env.QUAY_USER }}
+          password: ${{ env.QUAY_TOKEN }}
+
+      # Extract metadata (tags, labels) for Docker
+      # https://github.com/docker/metadata-action
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        with:
+          images: ${{ env.QUAY_REGISTRY }}/${{ env.BLOCKAI_IMAGE_NAME }}
+          tags: |
+            type=schedule,pattern=nightly-{{date 'YYYYMMDDhhmmss'}}
+            type=schedule,pattern=latest
+            type=sha,format=short
+
+      - name: Check kosmos Dockerfile
+        run: |
+            mkdir -p ./dist
+            cat ./Dockerfile
+
+      # Build and push Docker image with Buildx (don't push on PR)
+      # https://github.com/docker/build-push-action
+      - name: Build and push kosmos
+        id: build-and-push
+        #导入这个模块来完成自动编译和推送
+        uses: docker/build-push-action@v5
+        with:
+          context: ./
+          # file: ./dist/Dockerfile
+          # push: ${{ github.event_name != 'pull_request' }}
+          #在这里通过加入需要编译的平台和前面配好的QEMU，buildx来达到多平台编译
+          platforms: ${{ env.PLATFORMS }}
+          #指定用户/仓库名
+          tags: |
+            ${{ env.QUAY_REGISTRY }}/${{ env.BLOCKAI_IMAGE_NAME }}:latest
+            ${{ env.QUAY_REGISTRY }}/${{ env.BLOCKAI_IMAGE_NAME }}:${{ env.BUILD_TAG }}
+          labels: ${{ steps.meta.outputs.labels }}
+
