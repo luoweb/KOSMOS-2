@@ -50,8 +50,8 @@ def index(request):
     default_url = "https://tse3-mm.cn.bing.net/th/id/OIP-C.UfH-QuSzFmt5UBT6soE10gHaFj?rs=1&pid=ImgDetMain"
     default_prompt = "<grounding>An image of"
 
-    image_url = request.get("image_url", default_url)
-    prompt = request.get("prompt", default_prompt)
+    image_url = request.GET.get("image_url", default_url)
+    prompt = request.GET.get("prompt", default_prompt)
     image, processed_text, entities = process_image(image_url,prompt)
 
     # Draw bounding boxes on the image
