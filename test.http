@@ -1,0 +1,7 @@
+# test
+
+### GET API
+GET http://127.0.0.1:8000/kosmos
+
+#### POSTAPI
+POST http://127.0.0.1:8000/kosmos/api
